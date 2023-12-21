@@ -1,12 +1,18 @@
-import { useContext } from "react";
 import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../Providers/AuthProvider";
 import Swal from "sweetalert2";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import useAuth from "../../Hooks/useAuth";
+
+const image_api_key = import.meta.env.VITE_IMAGE_HOSTING_TOKEN;
+const image_api = `${
+  import.meta.env.VITE_IMAGE_HOSTING_API
+}?key=${image_api_key}`;
 
 const Register = () => {
-  const { createNewUser, updateUser } = useContext(AuthContext);
+  const axiosPublic = useAxiosPublic();
+  const { createNewUser, updateUser } = useAuth();
   const {
     register,
     handleSubmit,
@@ -16,26 +22,66 @@ const Register = () => {
 
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    createNewUser(data.email, data.password).then((result) => {
-      const registeredUser = result.user;
-      console.log(registeredUser);
-      updateUser(data.name, data.photoURL)
-        .then(() => {
-          console.log("user profile info updated");
+  const onSubmit = async (data) => {
+    const imageFile = {
+      image: data.image[0],
+    };
+    const res = await axiosPublic.post(image_api, imageFile, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    const image_url = res.data.data.display_url;
+
+    createNewUser(data.email, data.password)
+      .then((result) => {
+        if (result) {
+          updateUser(data.name, image_url)
+            .then(() => {
+              const userInfo = {
+                name: data.name,
+                email: data.email,
+                image: image_url,
+                role: "user",
+                status: "active",
+              };
+              axiosPublic.post("/users", userInfo).then((res) => {
+                if (res.data.insertedId) {
+                  reset();
+                  Swal.fire({
+                    position: "center",
+                    icon: "success",
+                    title: "Registration successful!",
+                    showConfirmButton: false,
+                    timer: 1500,
+                  });
+                  navigate("/");
+                }
+              });
+            })
+            .catch((error) => console.log(error));
+        }
+      })
+      .catch((error) => {
+        if (error.code === "auth/email-already-in-use") {
           reset();
           Swal.fire({
-            position: "top-end",
-            icon: "success",
-            title: "Registration successful!",
-            showConfirmButton: false,
-            timer: 1500,
+            icon: "error",
+            title: "Oops...",
+            text: "This email is already in use. Please use a different email.",
           });
-          navigate("/");
-        })
-        .catch((error) => console.log(error));
-    });
+          navigate("/register");
+        } else {
+          console.error("Firebase authentication error:", error);
+          reset();
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "An error occurred during registration. Please try again later.",
+          });
+          navigate("/register");
+        }
+      });
   };
 
   return (
@@ -73,17 +119,24 @@ const Register = () => {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Photo URL</span>
+                  <span className="label-text text-menuText text-xl font-semibold">
+                    Image
+                  </span>
                 </label>
-                <input
-                  type="text"
-                  {...register("photoURL", { required: true })}
-                  placeholder="Photo URL"
-                  className="input input-bordered"
-                />
-                {errors.photoURL && (
+                <label
+                  htmlFor="image"
+                  className="input input-bordered rounded-md h-[55px] focus:outline-none bg-[#E6E6E6] border-none flex items-center"
+                >
+                  <input
+                    type="file"
+                    {...register("image", { required: true })}
+                    placeholder="Upload Image"
+                    id="image"
+                  />
+                </label>
+                {errors.image && (
                   <span className="text-red-700 font-bold">
-                    Photo URL is required
+                    Image is required
                   </span>
                 )}
               </div>

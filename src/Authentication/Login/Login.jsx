@@ -1,63 +1,61 @@
-import { useContext, useEffect, useState } from 'react';
-import { loadCaptchaEnginge, LoadCanvasTemplate, validateCaptcha } from 'react-simple-captcha';
-import { AuthContext } from '../../Providers/AuthProvider';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Swal from 'sweetalert2'
+import useAuth from '../../Hooks/useAuth';
 
 const Login = () => {
 
-    const [disabled, setDisabled] = useState(true);
-    const { logInUser } = useContext(AuthContext);
+    const { logInUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
     const from = location.state?.from?.pathname || "/";
   
-    useEffect(() => {
-        loadCaptchaEnginge(6);
-    },[]);
-  
     const handleLogin = (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const email = form.email.value;
-    const password = form.password.value;
-
-    logInUser(email, password)
-    .then(result => {
-      const user = result.user;
-      console.log(user); 
-      Swal.fire({
-        title: "User Logged in successfully!",
-        showClass: {
-          popup: `
-            animate__animated
-            animate__fadeInUp
-            animate__faster
-          `
-        },
-        hideClass: {
-          popup: `
-            animate__animated
-            animate__fadeOutDown
-            animate__faster
-          `
+      e.preventDefault();
+      const form = e.target;
+      const email = form.email.value;
+      const password = form.password.value;
+  
+      logInUser(email, password).then((result) => {
+        const user = result.user;
+        Swal.fire({
+          title: `${user?.displayName} Logged in successfully!`,
+          showClass: {
+            popup: `
+              animate__animated
+              animate__fadeInUp
+              animate__faster
+            `,
+          },
+          hideClass: {
+            popup: `
+              animate__animated
+              animate__fadeOutDown
+              animate__faster
+            `,
+          },
+        });
+        navigate(from, { replace: true });
+      }).catch((error) => {
+        if (error.code === "auth/invalid-login-credentials") {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Email or Password is wrong. Please use correct login credentials.",
+          });
+          navigate("/login");
+        } else {
+          console.error("Firebase authentication error:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "An error occurred during login. Please try again later.",
+          });
+          navigate("/login");
         }
       });
-      navigate(from, { replace: true });
-    })
-  };
-
-  const handleValidateCaptcha = e => {
-    const user_captcha_value = e.target.value;
-    if(validateCaptcha(user_captcha_value) === true){
-        setDisabled(false);
-    }else{
-        setDisabled(true);
-    }
-    
-  }
+    };
 
   return (
     <>
@@ -101,22 +99,8 @@ const Login = () => {
               />
               
             </div>
-            <div className="form-control">
-              <label className="label">
-              <LoadCanvasTemplate />
-              </label>
-              <input
-                type="text"
-                name="captcha"
-                onBlur={handleValidateCaptcha}
-                placeholder="type the captcha above"
-                className="input input-bordered"
-                required
-              />
-              
-            </div>
             <div className="form-control mt-6">
-              <button disabled={disabled} className="btn btn-primary">Login</button>
+              <button className="btn btn-primary">Login</button>
             </div>
           </form>
           <p><small>New here? <Link to='/register'>Create an account</Link></small></p>
