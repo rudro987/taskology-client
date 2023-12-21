@@ -4,11 +4,11 @@ import Footer from "../Pages/Shared/Footer/Footer";
 
 const MainLayout = () => {
   return (
-    <div>
-      <Header></Header>
-      <div className="max-w-[85rem] mx-auto">
-        <Outlet></Outlet>
+    <div className="font-poppins">
+      <div className="relative">
+        <Header></Header>
       </div>
+      <Outlet></Outlet>
       <Footer></Footer>
     </div>
   );
