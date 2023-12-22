@@ -16,21 +16,21 @@ const TaskBoardLayOut = () => {
         <div className="w-80 min-h-screen bg-white">
           <ul className="menu p-5 text-xl gap-5">
             <li>
-              <NavLink to="/dashboard/profile">
+              <NavLink to="/taskboard/profile">
                 <RiProfileFill />
-                My Profile
+                Profile
               </NavLink>
             </li>
             <li>
-              <NavLink to="/dashboard/appointments">
+              <NavLink to="/taskboard/HandleTasks">
                 <FaBookmark />
-                Reservations
+                Handle Tasks
               </NavLink>
             </li>
             <li>
-              <NavLink to="/dashboard/testResults">
+              <NavLink to="/taskboard/addTask">
                 <FaList />
-                Test Results
+                Add a Task
               </NavLink>
             </li>
           </ul>
