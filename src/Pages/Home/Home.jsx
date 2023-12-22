@@ -5,7 +5,7 @@ const Home = () => {
   return (
     <div>
       <Helmet>
-        <title>Title of the site | Home</title>
+        <title>TaskNinja | Home</title>
       </Helmet>
       <Banner></Banner>
       <div className="max-w-[85rem] mx-auto">

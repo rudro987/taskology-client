@@ -6,6 +6,7 @@ import Home from "../Pages/Home/Home";
 import Login from "../Authentication/Login/Login";
 import Register from "../Authentication/Register/Register";
 import ErrorPage from "../Pages/ErrorPage/ErrorPage";
+import TaskBoardLayOut from "../TaskBoard/Layout/TaskBoardLayOut";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
           element: <Register></Register>
         }
     ]
+  },
+  {
+    path: "/taskboard",
+    element: <TaskBoardLayOut></TaskBoardLayOut>
   },
 ]);
 
